@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"></script>
+      
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
+    <title>テストサイト</title>
+</head>
+<body>
+    <p>This is test</p>
+    <!--折れ線グラフ表示-->
+    <img src="data:image/png;base64, {{ graph | safe }} " alt="">
+
+    <form name="checkes" action = ''  method="post">{% csrf_token %}
+        <!--データの種類の選択。ラジオボタンにより複数選択可能 -->
+        <p class="y_DataSelect">Y軸のデータを選んでください</p>
+        
+        <div id="averages">
+          <input type="checkbox" id="average" name="y_data" value="平均気温">
+          <label for="average">平均気温</label>
+          
+          <input type="checkbox" id="max_average" name="y_data" value="最高平均気温">
+          <label for="max_average">最高平均気温</label>
+
+          <input type="checkbox" id="min_average" name="y_data" value="最低平均気温">
+          <label for="min_average">最低平均気温</label>
+        </div>
+        
+        <div id="day_date">
+          <input type="checkbox" id="max" name="y_data" value="最高気温">
+          <label for="max">最高気温</label>
+        
+          <input type="checkbox" id="min" name="y_data" value="最低気温">
+          <label for="min">最低気温</label>
+        </div>
+
+        <!-- x軸の期間入力 -->
+        <p class="x_DataSelect">表示するデータの期間を記入してください。データは1946年～2022年まで選べます<em>※半角で入力してください</em><br>
+          <!--年と月のプルダウンメニュー-->
+          <p>
+          <select id="topyearSelect" name="topyearSelect"></select>年
+          ~
+          <select id="endyearSelect" name="endyearSelect"></select>年<br>
+
+          <select id="topmonthSelect" name="topmonthSelect"></select>月
+          ~
+          <select id="endmonthSelect" name="endmonthSelect"></select>月
+          </p>
+        </p>
+
+        <p><a href="javascript:void(0);" onclick = "modalOpen();">入力の例</a></p>
+        <!-- モーダルウィンドウここから -->
+        <div id="easyModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                  <h1>期間の入力のやりかた</h1>
+                  <span class="modalClose">×</span>
+                </div>
+                <div class="modal-body">
+                  <p>年ごとに見たい場合は「1946」のように入力します</p>
+                  <p>月ごとに見たい場合は「1946/1」のように/で区切ります</p>
+                  <p>日ごとに見たい場合は最後に「/1」を入力してください</p>
+                  <p>ある期間だけ見たい場合は同じ数値を二つともに入力して下さい</p>
+                </div>
+              </div>
+            </div>
+        </div>
+        <!-- モーダルウィンドウここまで -->
+        
+        <label><input type="radio" name="y_option" id="year">年ごと</label>
+        <label><input type="radio" name="y_option" id="month">月ごと</label>
+        <label><input type="radio" name="y_option" id="day">日ごと</label>
+    </form>
+    <a id="log">変数確認</a>
+    <!-- 以下Javascript -->
+    <script src="{% static 'JavaScripts/main.js' %}"></script>
+</body>
+</html>
