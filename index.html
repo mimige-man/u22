@@ -1,84 +1,216 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <script
       src="https://code.jquery.com/jquery-3.6.0.min.js"
       integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
       crossorigin="anonymous"></script>
-      
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
     <title>テストサイト</title>
 </head>
-<body>
-    <p>This is test</p>
-    <!--折れ線グラフ表示-->
-    <img src="data:image/png;base64, {{ graph | safe }} " alt="">
 
-    <form name="checkes" action = ''  method="post">{% csrf_token %}
+<body>
+
+    <p>予測データ 過去のデータを表示</p>
+    <!--折れ線グラフ表示-->
+    <img id="graph" src="data:image/png;base64, {{ graph | safe }}" alt="">
+
+    <form name="checkes" action='' method="post">{% csrf_token %}
         <!--データの種類の選択。ラジオボタンにより複数選択可能 -->
         <p class="y_DataSelect">Y軸のデータを選んでください</p>
-        
-        <div id="averages">
-          <input type="checkbox" id="average" name="y_data" value="平均気温">
-          <label for="average">平均気温</label>
-          
-          <input type="checkbox" id="max_average" name="y_data" value="最高平均気温">
-          <label for="max_average">最高平均気温</label>
 
-          <input type="checkbox" id="min_average" name="y_data" value="最低平均気温">
-          <label for="min_average">最低平均気温</label>
-        </div>
-        
-        <div id="day_date">
-          <input type="checkbox" id="max" name="y_data" value="最高気温">
-          <label for="max">最高気温</label>
-        
-          <input type="checkbox" id="min" name="y_data" value="最低気温">
-          <label for="min">最低気温</label>
+        <div id="averages">
+            <input type="radio" id="average" name="y_data" value="平均気温" checked>
+            <label for="average">平均気温</label>
+
+            <input type="radio" id="maxaverage" class="maxaverage" name="y_data" value="最高平均気温">
+            <label for="maxaverage" class="maxaverage">最高平均気温</label>
+
+            <input type="radio" id="minaverage" class="minaverage" name="y_data" value="最低平均気温">
+            <label for="minaverage" class="minaverage">最低平均気温</label>
+
+            <input type="radio" id="max" name="y_data" value="最高気温">
+            <label for="max">最高気温</label>
+
+            <input type="radio" id="min" name="y_data" value="最低気温">
+            <label for="min">最低気温</label>
         </div>
 
         <!-- x軸の期間入力 -->
         <p class="x_DataSelect">表示するデータの期間を記入してください。データは1946年～2022年まで選べます<em>※半角で入力してください</em><br>
-          <!--年と月のプルダウンメニュー-->
-          <p>
-          <select id="topyearSelect" name="topyearSelect"></select>年
-          ~
-          <select id="endyearSelect" name="endyearSelect"></select>年<br>
+            <!--年と月のプルダウンメニュー-->
+        <p>
+            <select id="topyearSelect" name="topyearSelect"></select>年
+            ~
+            <select id="endyearSelect" name="endyearSelect"></select>年<br>
 
-          <select id="topmonthSelect" name="topmonthSelect"></select>月
-          ~
-          <select id="endmonthSelect" name="endmonthSelect"></select>月
-          </p>
+            <select id="topmonthSelect" name="topmonthSelect"></select>月
+            ~
+            <select id="endmonthSelect" name="endmonthSelect"></select>月<br>
+
+            <select id="topdaySelect" name="topdaySelect"></select>日
+            ~
+
+            <select id="enddaySelect" name="enddaySelect"></select>日
+        </p>
         </p>
 
-        <p><a href="javascript:void(0);" onclick = "modalOpen();">入力の例</a></p>
-        <!-- モーダルウィンドウここから -->
-        <div id="easyModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                  <h1>期間の入力のやりかた</h1>
-                  <span class="modalClose">×</span>
-                </div>
-                <div class="modal-body">
-                  <p>年ごとに見たい場合は「1946」のように入力します</p>
-                  <p>月ごとに見たい場合は「1946/1」のように/で区切ります</p>
-                  <p>日ごとに見たい場合は最後に「/1」を入力してください</p>
-                  <p>ある期間だけ見たい場合は同じ数値を二つともに入力して下さい</p>
-                </div>
-              </div>
-            </div>
-        </div>
-        <!-- モーダルウィンドウここまで -->
-        
-        <label><input type="radio" name="y_option" id="year">年ごと</label>
-        <label><input type="radio" name="y_option" id="month">月ごと</label>
-        <label><input type="radio" name="y_option" id="day">日ごと</label>
+        <label><input type="radio" name="x_option" id="year" checked>年ごと</label>
+        <label><input type="radio" name="x_option" id="month">月ごと</label>
+        <label><input type="radio" name="x_option" id="day">日ごと</label>
+
+        <p>
+            <button type="button" onclick="buttonClick()">表示</button>
+        </p>
     </form>
-    <a id="log">変数確認</a>
-    <!-- 以下Javascript -->
-    <script src="{% static 'JavaScripts/main.js' %}"></script>
+    <p>出典：<a href ="https://www.jma.go.jp/jma/index.html">気象庁ホームページ</a></p>
+    <p>過去の気温データを加工して作成 当該URL：<a href = "https://www.data.jma.go.jp/risk/obsdl/index.php">https://www.data.jma.go.jp/risk/obsdl/index.php</a></p>
+    
+    <!-- 以下Javascript  外部jsの読み込み時にURLの変換ができていなかったのでHTMLに埋め込みました。
+     404は解決し403エラーとなりました。CSRF対策後403から500エラーになりました。 -->
+    {% block extra_js %}
+    <!-- <script src="{% static 'JavaScripts/main.js' %}"></script> -->
+    <script>
+        //月毎の日数
+        let month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        //フォームの取得
+        const form = document.forms.checkes;
+
+        var vals = []; // 配列を定義
+
+        //各radiobuttonのドキュメント
+        let average = document.getElementById("average");
+        let max_average = document.getElementById("max_average");
+        let min_average = document.getElementById("min_average");
+        let max = document.getElementById("max");
+        let min = document.getElementById("min");
+        let averages = document.getElementById('averages');
+        let day_date = document.getElementById('day_date');
+
+        function graphDataSet() {
+
+        }
+
+        document.getElementById('log').onclick = function() {
+            console.log(x_date_top);
+        }
+
+        //プルダウンメニュー
+        const selectBox1 = document.getElementById('topyearSelect');
+        const selectBox2 = document.getElementById('endyearSelect');
+        const selectBox3 = document.getElementById('topmonthSelect');
+        const selectBox4 = document.getElementById('endmonthSelect');
+        const startYear = 1946;
+        const endYear = 2033;
+        const startMonth = 1;
+        const endMonth = 12;
+
+        //初めの年のプルダウンメニュー
+        for (let year = startYear; year <= endYear; year++) {
+            const option1 = document.createElement('option');
+            option1.value = year;
+            option1.textContent = year;
+            selectBox1.appendChild(option1);
+
+            //終わりの年のプルダウンメニュー
+            const option2 = document.createElement('option');
+            option2.value = year;
+            option2.textContent = year;
+            selectBox2.appendChild(option2);
+        }
+
+        //初めの月のプルダウンメニュー
+        for (let month = startMonth; month <= endMonth; month++) {
+            const option1 = document.createElement('option');
+            option1.value = month;
+            option1.textContent = month;
+            selectBox3.appendChild(option1);
+
+            //終わりの月のプルダウンメニュー
+            const option2 = document.createElement('option');
+            option2.value = month;
+            option2.textContent = month;
+            selectBox4.appendChild(option2);
+        }
+
+        let input_day = document.getElementById("day");
+        let input_maxaverage = document.getElementsByClassName("maxaverage");
+        let input_minaverage = document.getElementsByClassName("minaverage");
+        $('input[name="x_option"]').change(function(){
+            var select = $(this).attr('id');
+            console.log(select);
+
+            if(select === "day"){
+                for(let i = 0; i < input_maxaverage.length; i++){
+                    input_maxaverage[i].classList.add('hidden');
+                    input_minaverage[i].classList.add('hidden');
+                }
+            }else{
+                for(let i = 0; i < input_maxaverage.length; i++){
+                    input_maxaverage[i].classList.remove('hidden');
+                    input_minaverage[i].classList.remove('hidden');
+                }
+            }
+        })
+        function buttonClick() {
+            const y_data = document.querySelector('input[name="y_data"]:checked');
+            const topyear = selectBox1.value;
+            const endyear = selectBox2.value;
+            const topmonth = selectBox3.value;
+            const endmonth = selectBox4.value;
+            const x_option = document.querySelector('input[name="x_option"]:checked');
+            var x_top = "";
+            var x_end = "";
+
+            //0624 CSRFトークン
+            var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+
+            if (topyear > endyear) {
+                alert("入力値に誤りがありました。");
+            } else if (topyear == endyear && topmonth >= endmonth) {
+                alert("入力値に誤りがありました。");
+            }else if(x_option.id == "year" && topyear == endyear ){
+                alert("入力値に誤りがありました。");
+            } else {
+                if (x_option.id == "year") {
+                    x_top = topyear;
+                    x_end = endyear;
+                } else if (x_option.id == "month") {
+                    x_top = topyear + "-" + topmonth;
+                    x_end = endyear + "-" + endmonth;
+                } else if (x_option.id == "day") {
+                    x_top = topyear + "-" + topmonth + "-1";
+                    x_end = endyear + "-" + endmonth + "-1";
+                }
+
+                $.ajax({
+                    url: `{% url 'testapp:change_graph' %}`,
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    type: 'POST',
+                    data: {
+                        'x_top': x_top,
+                        'x_end': x_end,
+                        'x_option': x_option.id,
+                        'y_select': y_data.id,
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        document.getElementById('graph').src = 'data:image/png;base64,' + response.graph;
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+        }
+    </script>
+    {% endblock %}
 </body>
+
 </html>
